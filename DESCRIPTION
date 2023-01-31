@@ -1,12 +1,10 @@
 Package: dsample
-Type: Package
 Title: Discretization-Based Direct Random Sample Generation
 Version: 0.91.3.3
-Authors@R: c(
-  person(given = "Chel Hee", family = "Lee", role = c("aut", "cre"), email="chelhee.lee@ucalgary.ca", comment = c(ORCID = "0000-0001-8209-8176")),
-  person(given = "Liqun", family = "Wang", role = c("aut"), email="liqun.wang@umanitoba.ca")
-)
+Authors@R: c(person(given = "Chel Hee", family = "Lee", role = c("aut", "cre"), email="chelhee.lee@ucalgary.ca", comment = c(ORCID = "0000-0001-8209-8176")), person(given = "Liqun", family = "Wang", role = c("aut"), email="liqun.wang@umanitoba.ca"))
 Description: Two discretization-based Monte Carlo algorithms, namely the Fu-Wang algorithm and the Wang-Lee algorithm, are provided for random sample generation from a high dimensional distribution of complex structure.  The normalizing constant of the target distribution needs not to be known.
 License: GPL-3
-Packaged: 2015-11-30 01:41:09 UTC; chel
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
 Imports: stats, graphics, MASS
