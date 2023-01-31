@@ -34,6 +34,37 @@ op <- summary(smp, k=3)
 op$means
 op$modes
 do.call(cbind, lapply(split(op$X, op$grp), colMeans))
-plot(op)
-
+# plot(op)
 ```
+
+## 6.1 Space Shuttle Challenger
+
+## 6.2 Beetle 
+
+## 6.3 Dugong (WinBugs)
+
+## 6.4 British Coal Mining Data 
+
+
+## 6.5 Nuclear Pump Data 
+
+* OpenBUGS example 
+* put pump data 
+```{r}
+# Filename : pump.wl.R [Final Thesis Submission Program]
+# Date: 2009.07.15
+# Programmer : Chel Hee Lee
+# Example : Nuclear Pump Failure Rate, Poisson Empirical Bayesian Model
+# Paper : Simulation and Monte Carlo with Applications in Finance and MCMC, J.S. Dagpunar, p.168
+# Type : Wang-Lee Algorithm, Unbounded Case
+
+rm(list=ls(all.names=TRUE));
+
+# Nuclear Pump Failure Rate, Gaver and O'Muircheartaigh, 1987
+time <- c(94.32, 15.72, 62.88, 125.76, 5.24, 31.44, 1.05, 1.05, 2.10, 10.48);
+failure <- c( 5, 1, 5, 14, 3, 19, 1, 1, 4, 22);
+data <- data.frame(time=time, failure=failure);
+```
+
+## 6.6 SLC 190 Genetic 
+
