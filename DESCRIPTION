@@ -6,17 +6,7 @@ Authors@R: c(
   person(given = "Chel Hee", family = "Lee", role = c("aut", "cre"), email="chelhee.lee@ucalgary.ca", comment = c(ORCID = "0000-0001-8209-8176")),
   person(given = "Liqun", family = "Wang", role = c("aut"), email="liqun.wang@umanitoba.ca")
 )
-Author: Chel Hee Lee [aut, cre], 
-  Liqun Wang [aut]
-Maintainer: Chel Hee Lee <chelhee.lee@ucalgary.ca>
-Contact: Chel Hee Lee <chelhee.lee@ucalgary.ca>
 Description: Two discretization-based Monte Carlo algorithms, namely the Fu-Wang algorithm and the Wang-Lee algorithm, are provided for random sample generation from a high dimensional distribution of complex structure.  The normalizing constant of the target distribution needs not to be known.
-Depends: R (>= 2.7.0)
-Imports: stats, graphics, MASS
 License: GPL-3
-URL: https://r-forge.r-project.org/projects/wanglee/
-BugReports: chelhee.lee@ucalgary.ca
-NeedsCompilation: no
 Packaged: 2015-11-30 01:41:09 UTC; chel
-Repository: CRAN
-Date/Publication: 2015-11-30 06:13:11
+Imports: stats, graphics, MASS
