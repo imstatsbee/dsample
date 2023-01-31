@@ -3,8 +3,10 @@ title: "example"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{example}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -33,7 +35,7 @@ do.call(cbind, lapply(split(op$X, op$grp), colMeans))
 # plot(op)
 ```
 
-## 6.1 Space Shuttle Challenger
+## 6.1 Space Shuttle Challenger disaster 
 
 ```{r}
 # Programmer : Chel Hee Lee
@@ -44,6 +46,59 @@ do.call(cbind, lapply(split(op$X, op$grp), colMeans))
 temp <- c( 53, 57, 58, 63, 66, 67, 67, 67, 68, 69, 70, 70, 70, 70, 72, 73, 75, 75, 76, 76, 78, 79, 81);
 failure <- c( 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0);
 data <- data.frame(temp=temp, failure=failure);
+
+## See the other sources on 2023-JAN-31 
+## 
+## https://rstudio-pubs-static.s3.amazonaws.com/159664_1a1fbed2873049fc825eef4332a9b557.html
+## https://www.stat.ubc.ca/~bouchard/courses/stat520-sp2014-15/lecture/2015/02/27/notes-lecture3.html
+
+library(bayesboot)
+library(MCMCpack)
+library(ggplot2)
+
+y <- failure
+table(y)
+x <- temp
+hist(x, breaks=3)
+qqnorm(x)
+shapiro.test(x)
+
+plot(x,y,col=factor(y))
+abline(v = 65)
+grid()
+
+
+## conventional logistic regression 
+fit.sh <- glm(y ~ x, family=binomial)
+summary(fit.sh)
+
+confint(fit.sh)
+shut<-data.frame(x,y)
+binomial_smooth <- function(...) {
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), ...)
+}
+ggplot(shut,aes(x,y)) + geom_point(aes(colour=y)) +binomial_smooth()
+
+## bayesian logistic regression 
+
+glm.coefs <- function(d, w) {
+  coef( glm(y ~ x, data = shut, family=binomial, weights = w) )
+}
+
+set.seed(12345)
+# fit.bs <- bayesboot(shut, glm.coefs, R = 1e4, use.weights = TRUE)
+fit.bs <- bayesboot(shut, glm.coefs, R = 2e3, use.weights = TRUE)
+summary(fit.bs)
+plot(fit.bs)
+
+posterior <- MCMClogit(y~x, data=shut,mcmc = 3e3, seed = 12345,marginal.likelihood = "Laplace")
+plot(posterior)
+summary(posterior)
+
+prob.cl<-1/(1+exp(-(3.33-0.51*30))) # q2.5% for clfssical model
+prob.bs<-1/(1+exp(-(4.58-0.6*30))) # q2.5% for byasian model
+prob.cl
+prob.bs
 ```
 
 ## 6.2 Beetle 
