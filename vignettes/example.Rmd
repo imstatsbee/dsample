@@ -86,7 +86,7 @@ summary(f.b2 <- glm(y~x, family=binomial(link=cloglog)))
 ## https://is.muni.cz/el/sci/jaro2013/M8BDA/um/Lecture_1_-_9_-_Bayesian_Statistics_with_R_and_BUGS_2013.pdf?lang=en
 ## https://rstudio-pubs-static.s3.amazonaws.com/159664_1a1fbed2873049fc825eef4332a9b557.html
 ## https://www.stat.ubc.ca/~bouchard/courses/stat520-sp2014-15/lecture/2015/02/27/notes-lecture3.html
-
+## https://cmapspublic3.ihmc.us/rid=1MHBP079Y-1D1TY5-16GG/NASA%20Bayesian%20Inference%20for%20Probabilistic%20Risk%20Analysis.pdf
 ```
 
 ## 6.2 Beetle 
