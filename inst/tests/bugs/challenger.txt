@@ -1,0 +1,18 @@
+model
+{
+  # Space Shuttle Challenger
+
+  # likelihood
+  for(i in 1 : N) {
+  y[i] ~ dbern(p[i])
+  logit(p[i]) <- beta0 + beta1 * z[i] }
+  for(i in 1:N){
+    z[i] <- step(x[i] - K)
+  }
+
+  #priors
+  K ~ dunif(53, 81)
+  beta0 ~ dnorm(0.0, 0.01)
+  beta1 ~ dnorm(0.0, 0.01)
+}
+

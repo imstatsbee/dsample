@@ -7,6 +7,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
+bibliography: references.bib
+nocite: | 
+    @Wang2014, @Wang2007
 ---
 
 ```{r, include = FALSE}
@@ -20,90 +23,77 @@ knitr::opts_chunk$set(
 library(dsample)
 ```
 
-```{r}
-# A mixture of three normal populations 
+## Simulation 
 
-library(dsample)
-expr <- expression(1/3*mnormt::dmnorm(x=cbind(x1,x2), mean=c(-8,-8), varcov=matrix(c(1,0.9,0.9,1), ncol=2)) + 1/3*mnormt::dmnorm(x=cbind(x1,x2), mean=c(6,6), varcov=matrix(c(1,-0.9,-0.9,1), ncol=2)) + 1/3*mnormt::dmnorm(x=cbind(x1,x2), mean=c(0,0), varcov=matrix(c(1,0,0,1), ncol=2)))
-sets <- list(x1=runif(n=1e5, min=-12, max=11), x2=runif(n=1e5, min=-12, max=11))
+This example is taken from the study of @West1993. 
+
+```{r}
+expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
+sets <- list(x1=runif(1e4), x2=runif(1e4))
+smp <- dsample(expr=expr, rpmat=sets, nk=3e3, n=3e2)
+op <- summary(smp, n=10, k=2)
+op$means
+op$modes
+do.call(cbind, lapply(split(op$X, op$grp), colMeans))
+plot(op, which=2)
+```
+
+@Liang2007
+
+```{r}
+expr <- expression(
+  1/3*mnormt::dmnorm(x=cbind(x1,x2), 
+                     mean=c(-8,-8), 
+                     varcov=matrix(c(1,0.9,0.9,1), ncol=2)) 
+  + 1/3*mnormt::dmnorm(x=cbind(x1,x2), 
+                       mean=c(6,6), 
+                       varcov=matrix(c(1,-0.9,-0.9,1), ncol=2)) 
+  + 1/3*mnormt::dmnorm(x=cbind(x1,x2), 
+                       mean=c(0,0), 
+                       varcov=matrix(c(1,0,0,1), ncol=2)))
+sets <- list(x1=runif(n=1e4, min=-12, max=11), 
+             x2=runif(n=1e4, min=-12, max=11))
 y <- eval(expr=expr, env=sets)
-smp <- dsample(expr=expr, rpmat=sets, nk=1e4, n=1e3)
+smp <- dsample(expr=expr, rpmat=sets, nk=3e3, n=5e2)
 op <- summary(smp, k=3)
 op$means
 op$modes
 do.call(cbind, lapply(split(op$X, op$grp), colMeans))
-# plot(op)
+plot(op, which=2)
 ```
 
 ## 6.1 Space Shuttle Challenger disaster 
 
-```{r}
-# Programmer : Chel Hee Lee
-# Example : Logistic Regression - Challenger Dataset Analysis
-# Paper : Monte Carlo Statistical Methods, Springer,Robert and Casella,2008,p.281
+@Dalal1989
 
-# Challenger Dataset from p.15, Robert and Casella, 2008
+Bayesian logistic regression 
+
+```{r eval=FALSE}
+failure <- c( 1, 1, 1,  1, 0, 0, 0,  0, 0, 0, 0,  0, 1, 1, 0,  0, 0, 1, 0,  0, 0, 0, 0);
 temp <- c( 53, 57, 58, 63, 66, 67, 67, 67, 68, 69, 70, 70, 70, 70, 72, 73, 75, 75, 76, 76, 78, 79, 81);
-failure <- c( 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0);
 data <- data.frame(temp=temp, failure=failure);
+nrow(data)
+data
 
-## See the other sources on 2023-JAN-31 
-## 
+y <- failure
+x <- temp
+N <- 23 
+
+summary(f.b1 <- glm(y~x, family=binomial))
+summary(f.b2 <- glm(y~x, family=binomial(link=cloglog)))
+
+
+## https://is.muni.cz/el/sci/jaro2013/M8BDA/um/Lecture_1_-_9_-_Bayesian_Statistics_with_R_and_BUGS_2013.pdf?lang=en
 ## https://rstudio-pubs-static.s3.amazonaws.com/159664_1a1fbed2873049fc825eef4332a9b557.html
 ## https://www.stat.ubc.ca/~bouchard/courses/stat520-sp2014-15/lecture/2015/02/27/notes-lecture3.html
 
-library(bayesboot)
-library(MCMCpack)
-library(ggplot2)
-
-y <- failure
-table(y)
-x <- temp
-hist(x, breaks=3)
-qqnorm(x)
-shapiro.test(x)
-
-plot(x,y,col=factor(y))
-abline(v = 65)
-grid()
-
-
-## conventional logistic regression 
-fit.sh <- glm(y ~ x, family=binomial)
-summary(fit.sh)
-
-confint(fit.sh)
-shut<-data.frame(x,y)
-binomial_smooth <- function(...) {
-  geom_smooth(method = "glm", method.args = list(family = "binomial"), ...)
-}
-ggplot(shut,aes(x,y)) + geom_point(aes(colour=y)) +binomial_smooth()
-
-## bayesian logistic regression 
-
-glm.coefs <- function(d, w) {
-  coef( glm(y ~ x, data = shut, family=binomial, weights = w) )
-}
-
-set.seed(12345)
-# fit.bs <- bayesboot(shut, glm.coefs, R = 1e4, use.weights = TRUE)
-fit.bs <- bayesboot(shut, glm.coefs, R = 2e3, use.weights = TRUE)
-summary(fit.bs)
-plot(fit.bs)
-
-posterior <- MCMClogit(y~x, data=shut,mcmc = 3e3, seed = 12345,marginal.likelihood = "Laplace")
-plot(posterior)
-summary(posterior)
-
-prob.cl<-1/(1+exp(-(3.33-0.51*30))) # q2.5% for clfssical model
-prob.bs<-1/(1+exp(-(4.58-0.6*30))) # q2.5% for byasian model
-prob.cl
-prob.bs
 ```
 
 ## 6.2 Beetle 
 
-```{r}
+@Prentice1976
+
+```{r eval=FALSE}
 # Example : Generalized Logit Model - Dose-Response Dataset by Bliss(1935)
 # Paper : Bayes and Empirical Bayes Methods for Data Analysis,Carlin and Louis,p. 177
 # Type : Fu-Wang Algorithm
@@ -115,9 +105,13 @@ ni <- c(59, 60, 62, 56, 63, 59, 62, 60);
 data <- data.frame(wi=wi, yi=yi, ni=ni);
 ```
 
-## 6.3 Dugong (WinBugs)
+## 6.3 Dugong
 
-```{r}
+@Ratkowsky1986
+
+Volume 2 in WinBUGS / nonconjugate nonlinear model 
+
+```{r eval=FALSE}
 # Example : Dugongs Data Analysis, Ratkowsky, 1983
 # Paper : OPENBUGS, Carlin and Gelfand, 1991, p.125, Malefaki and Iliopoulos, 2008, p.1219
 # Type : Wang-Lee Algorithm, Unbounded Case, Bayesian Analysis
@@ -130,7 +124,12 @@ data <- data.frame(x.age=x.age, y.length=y.length);
 ```
 
 ## 6.4 British Coal Mining Data 
-```{r}
+
+@Diggle1988
+
+```{r eval=FALSE}
+# https://search.r-project.org/CRAN/refmans/aspline/html/coal.html
+# https://mysite.science.uottawa.ca/malvo/Mat4376-5313/Sample%20project%20R%20code.pdf
 # Example : British Coalmining Disaster Data from 1851-1962
 # Paper : Poisson change point model, Tanner 1992
 # Type : Fu-Wang Algorithm
@@ -143,11 +142,13 @@ x <- c(4, 5, 4, 1, 0, 4, 3, 4, 0, 6, 3, 3, 4, 0, 2, 6, 3, 3, 5, 4, 5, 3, 1, 4, 4
 
 ## 6.5 Nuclear Pump Data 
 
-* Add OpenBUGS codes here 
+@Gaver1987
 
-* Add pump data here 
-
-```{r}
+```{r eval=FALSE}
+# https://amath.colorado.edu/faculty/vdukic/Bayes/code/Gibbs_pumps_posted.R
+# http://www.people.vcu.edu/~dbandyop/pubh7440/Example0.2015.pdf
+# https://people.math.aau.dk/~slb/kurser/r-11/mini.pdf
+# https://search.r-project.org/CRAN/refmans/bang/html/pump.html
 # Example : Nuclear Pump Failure Rate, Poisson Empirical Bayesian Model
 # Paper : Simulation and Monte Carlo with Applications in Finance and MCMC, J.S. Dagpunar, p.168
 # Type : Wang-Lee Algorithm, Unbounded Case
@@ -158,9 +159,12 @@ failure <- c( 5, 1, 5, 14, 3, 19, 1, 1, 4, 22);
 data <- data.frame(time=time, failure=failure);
 ```
 
+
 ## 6.6 SLC 190 Genetic 
 
-```{r}
+@Roeder1994
+
+```{r eval=FALSE}
 # Example : Genetic SLC190 Data Analysis
 # Paper : A Practical Sampling Approach for a Bayesian Mixture Model with unknown number of components, Wang & Fu 2007
 # Type : Wang-Lee Algorithm, Unbounded Case, Weight on the last partition  = 0.01

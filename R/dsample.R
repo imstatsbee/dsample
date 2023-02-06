@@ -13,22 +13,12 @@
 #' @references
 #' Wang, L. and Lee, C.H. (2014). Discretization-based direct random sample generation. Computational Statistics and Data Analysis, 71, 1001-1010.
 #' Lee, C.H. (2009). Efficient Monte Carlo Random Sample Generation through Discretization, MSc thesis, Department of Satistics, University of Manitoba, Canada
-#' Wang, L. and Fu, J. (2007). A practical sampling approach for a bayesian mixture model with unknown number of components. Statistical Papers, 48(4):631-653.
-#' Fu, J. C. and Wang, L. (2002). A random-discretization based Monte Carlo sampling method and its application. Methodology and Computing in Applied Probability, 4, 5-25.
-#' @author Chel Hee Lee \email{chl948@@mail.usask.ca}, Liqun Wang \email{liqun.wang@@umanitoba.ca}
 #' @keywords sampling, discretization
 #' @examples
-#' ## The following example is taken from West (1993, page 414).
-#' ## West, M. (1993). Approximating posterior distributions by mixture.
-#' ##   Journal of the Royal Statistical Society - B, 55, 409-422.
-#'
+#' ## Example on page 414 in West (1993)
 #' expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
-#' sets <- list(x1=runif(1e5), x2=runif(1e5))
-#' smp <- dsample(expr=expr, rpmat=sets, nk=1e4, n=1e3)
-#'
-#' ##
-#' ## More accurate results can be achieved by increasing the number
-#' ## of dicretization points and the number of contours.
+#' sets <- list(x1=runif(1e3), x2=runif(1e3))
+#' smp <- dsample(expr=expr, rpmat=sets, nk=1e3, n=1e1)
 #' @export
 dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 
@@ -84,7 +74,6 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 #' @param object a \code{data.frame}, contains the sample drawn via either the Fu-Wang algorithm or the Wang-Lee algorithm
 #' @param n the first n samples
 #' @param ... more arguments
-#' @author Chel Hee Lee \email{chl948@@mail.usask.ca}, Liqun Wang \email{liqun.wang@@umanitoba.ca}
 #' @export
 summary.dsample <- function(object, n=5, ...) {
 
@@ -110,19 +99,22 @@ summary.dsample <- function(object, n=5, ...) {
 #' @title Plot dsample objects
 #' @description Plot dsample objects
 #' @param x dsample object.
+#' @param which plot indicator -- 1: cumulative distribution, 2: contour plot, 3: histogram in dimension 1, 4: histogram in dimension 2.
 #' @param ... arguments passing functions inside.
 #' @export
-plot.dsample <- function(x, ...){
+plot.dsample <- function(x, which, ...){
 
 	X <- x$X
 	cdf <- x$cdf
 	grp <- x$grp
 
-	graphics::par(mfrow=c(2,2))
-	graphics::plot(cdf, main="CDF", xlab="E", ylab="F(E)", cex=0.5)
-	graphics::plot(X, cex=0.5, main="Scatter and Contour Plots", xlab="x1", ylab="x2", col=grp)
-	density <- MASS::kde2d(X[,1], X[,2], n=1e3)
-	graphics::contour(density, nlevels=5, add=TRUE)
-	graphics::hist(X[,1], main="Histogram", ylab="density", xlab=expression(x[1]), prob=TRUE, breaks=20)
-	graphics::hist(X[,2], main="Histogram", ylab="density", xlab=expression(x[2]), prob=TRUE, breaks=20)
+	# graphics::par(mfrow=c(2,2))
+	if(which==1) graphics::plot(cdf, main="CDF", xlab="E", ylab="F(E)", cex=0.5)
+	if(which==2) {
+	  graphics::plot(X, cex=0.5, main="Scatter and Contour Plots", xlab="x1", ylab="x2", col=grp)
+	  density <- MASS::kde2d(X[,1], X[,2], n=1e3)
+	  graphics::contour(density, nlevels=5, add=TRUE)
+	}
+	if(which==3) graphics::hist(X[,1], main="Histogram", ylab="density", xlab=expression(x[1]), prob=TRUE, breaks=20)
+	if(which==4) graphics::hist(X[,2], main="Histogram", ylab="density", xlab=expression(x[2]), prob=TRUE, breaks=20)
 }
