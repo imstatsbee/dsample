@@ -32,13 +32,26 @@ Run `demo(mix2)` and `demo(mix3)`.
 Data are taken from @Dalal1989. Details are described in @Dezfuli2009 on [pages 144--146](https://ntrs.nasa.gov/api/citations/20090023159/downloads/20090023159.pdf).
 
 ```{r eval=FALSE}
-failure <- c( 1, 1, 1,  1, 0, 0, 0,  0, 0, 0, 0,  0, 1, 1, 0,  0, 0, 1, 0,  0, 0, 0, 0);
-temp <- c( 53, 57, 58, 63, 66, 67, 67, 67, 68, 69, 70, 70, 70, 70, 72, 73, 75, 75, 76, 76, 78, 79, 81);
-data <- data.frame(temp=temp, failure=failure);
-nrow(data)
-data
+rm(list=ls())
+failure <- c( 1, 1, 1,  1, 0, 0, 0,  0, 0, 0, 0,  0, 1, 1, 0,  0, 0, 1, 0,  0, 0, 0, 0)
+temp <- c( 53, 57, 58, 63, 66, 67, 67, 67, 68, 69, 70, 70, 70, 70, 72, 73, 75, 75, 76, 76, 78, 79, 81)
+data <- data.frame(temp=temp, failure=failure)
+n.obs <- nrow(data);
+fit <- glm(failure~temp, family=binomial(link="logit"));
+alpha.hat <- fit$coef[1]
+gamma <- 0.577216
+b <- exp(alpha.hat + gamma)
 
-expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
+expr <- str2expression("lp <- 0;
+  for( index in 1:n.obs) lp <- lp + failure[index] * log(exp(alpha+beta*temp[index])/(1+exp(alpha+beta*temp[index]))); 
+  for( index in 1:n.obs) lp <- lp + (1-failure[index])*log(1/(1+exp(alpha+beta*temp[index])));
+  lp <- lp + alpha - exp(alpha)/b;")
+sets <- list(alpha=runif(1e5), beta=runif(1e5))
+smp <- dsample(expr=expr, rpmat=sets, nk=1e4, n=1e3)
+
+library(dsample)
+expr <- str2expression("(x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37")
+# expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
 sets <- list(x1=runif(1e5), x2=runif(1e5))
 smp <- dsample(expr=expr, rpmat=sets, nk=1e4, n=1e3)
 op <- summary(smp, n=10, k=2)

@@ -78,7 +78,7 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 summary.dsample <- function(object, n=5, ...) {
 
 	stopifnot(inherits(object, "dsample"))
-	fmla <- object$formula
+	# fmla <- object$formula
 
 	X <- object$X
 	hc <- stats::hclust(stats::dist(X))
@@ -89,7 +89,8 @@ summary.dsample <- function(object, n=5, ...) {
 	stdevs <- do.call(c, lapply(X, stats::sd, na.rm=TRUE))
 	modes <- cbind(X)[1:n,]
 
-	robj <- list(formula=fmla, means=means, stdevs=stdevs, modes=modes, hc=hc, grp=grp, X=X, cdf=cdf)
+	# robj <- list(formula=fmla, means=means, stdevs=stdevs, modes=modes, hc=hc, grp=grp, X=X, cdf=cdf)
+	robj <- list(means=means, stdevs=stdevs, modes=modes, hc=hc, grp=grp, X=X, cdf=cdf)
 	class(robj) <- "dsample"
 	return(robj)
 }
