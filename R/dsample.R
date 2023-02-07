@@ -76,16 +76,17 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 #' @description  Producing basic summary statistics (the mean, the standard deviation and the first five modes) from the sample drawn via either the Fu-Wang algorithm or the Wang-Lee algorithm, for all marginal distributions of the target distribution.
 #' @param object a \code{data.frame}, contains the sample drawn via either the Fu-Wang algorithm or the Wang-Lee algorithm
 #' @param n the first n samples
+#' @param k number of clusters
 #' @param ... more arguments
 #' @export
-summary.dsample <- function(object, n=5, ...) {
+summary.dsample <- function(object, n=5, k, ...) {
 
 	stopifnot(inherits(object, "dsample"))
 	# fmla <- object$formula
 
 	X <- object$X
 	hc <- stats::hclust(stats::dist(X))
-	grp <- stats::cutree(hc, ...)
+	grp <- stats::cutree(hc, k=k, ...) # k is used here.
 	cdf <- object$cdf
 
 	means <- colMeans(X)
