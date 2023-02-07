@@ -79,7 +79,7 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 #' @param k number of clusters
 #' @param ... more arguments
 #' @export
-summary.dsample <- function(object, n=5, k, ...) {
+summary.dsample <- function(object, n=5, k=1, ...) {
 
 	stopifnot(inherits(object, "dsample"))
 	# fmla <- object$formula
