@@ -1,15 +1,15 @@
 #'
 #' @rdname dsample
-#' @title Random Samples Generation Through The Wang-Lee and Fu-Wang Algorithms
-#' @description \code{sample.wl} generates a sample of specified size \code{n} from the target density function (up to a normalizing constant) based on the Wang-Lee algorithm
-#' @param expr expression
+#' @title Generating Random Samples via Wang-Lee algorithm
+#' @description \code{dsample} generates a sample of specified size \code{n} from the target density function (up to a normalizing constant) based on the Wang-Lee algorithm.
+#' @param expr expression of a target density function
 #' @param rpmat matrix containing random points for discretization
-#' @param  nk     a positive integer, the number of contours.  See \sQuote{Details}.
-#' @param  n      a non-negative integer, the desired sample size.
-#' @param  wconst a real number between 0 and 1.  See \sQuote{Details}.
-#' @details  \code{X} has the number of rows equals to the number of discrete base points. In each row, the first element contians the funcitonal value of the target density and the rest elements are the coordinates at which the density is evaluated.
-#' \code{wconst} is a constant for adjusting the volumn of the last contour.
-#' @return \code{sample.wl} gives the drawn sample as a \code{data.frame} with number of rows equals the specified size \code{n} and number of columns equals \code{ncol(x)-1}.
+#' @param  nk     positive integer, the number of contours.  See \sQuote{Details}.
+#' @param  n      non-negative integer, the desired sample size.
+#' @param  wconst real number between 0 and 1.  See \sQuote{Details}.
+#' @details  \code{X} has the number of rows equals to the number of discrete base points. In each row, the first element contains the functional value of the target density and the rest elements are the coordinates at which the density is evaluated.
+#' \code{wconst} is a constant for adjusting the volume of the last contour.
+#' @return \code{dsample} gives the samples in \code{data.frame} with number of rows \code{n} and number of columns \code{ncol(rpmat)}.
 #' @references
 #' Wang, L. and Lee, C.H. (2014). Discretization-based direct random sample generation. Computational Statistics and Data Analysis, 71, 1001-1010.
 #' Lee, C.H. (2009). Efficient Monte Carlo Random Sample Generation through Discretization, MSc thesis, Department of Satistics, University of Manitoba, Canada
@@ -18,12 +18,9 @@
 #' ## Example on page 414 in West (1993)
 #' expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
 #' sets <- list(x1=runif(1e3), x2=runif(1e3))
-#' smp <- dsample(expr=expr, rpmat=sets, nk=1e3, n=1e1)
+#' smp <- dsample(expr=expr, rpmat=sets, nk=1e2, n=1e3)
 #' @export
 dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
-
-	# option 1. random discretization (currently used)
-	# option 2. grid discretization (approximation)
 
 	variables <- all.vars(expr)
 	if(missing(wconst)) wconst <- 1
@@ -31,14 +28,10 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 	stopifnot(is.expression(expr), is.list(rpmat), is.numeric(nk), is.numeric(n), is.numeric(wconst))
 
 	y <- eval(expr=expr, envir=rpmat)
-	# fmla <- stats::as.formula(paste("y~", expr, sep=""))
-
 	X <- as.data.frame(rpmat)
 	yX <- as.data.frame(cbind(y, X))
 	yX <- yX[which(y>0),] # data.frame
 	yX <- yX[order(yX$y, decreasing=TRUE), ]
-	# print(yX$y)
-	# print(min(yX$y))
 
 	cnt <- graphics::hist(yX$y, breaks=seq(from=min(yX$y), to=max(yX$y), length.out=nk+1), plot=FALSE)
 	cnames <- paste("e", seq_len(nk), sep="") # contour name (in order)
@@ -55,57 +48,61 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 	cdf <- cumsum(gpdf)/sum(gpdf)
 	cumcdf <- cumsum(cdf)
 
-	# counting how many samples are needed from each contour
 	pptns <- graphics::hist(stats::runif(n), breaks=c(0,cdf), plot=FALSE)$counts
 	names(pptns) <- rev(paste("e", seq_len(nk), sep=""))
 
-	# sampling from each contour
 	scnt <- mapply(FUN=sample, MoreArgs=list(replace=TRUE), rev.cntc, pptns)
 	idx <- unlist( mapply("+", as.list( c(0, cumsum(rev.cntc))[-(nk+1)] ), scnt) )
 	yX <- yX[order(yX$y, decreasing=TRUE)[idx], ]
 
-	# robj <- list(formula=fmla, expr=expr, yX=yX, X=yX[all.vars(expr)], cnt.counts=cnt.counts, cnt.mids=cnt.mids, gpdf=gpdf, cdf=cdf, cumcdf=cumcdf, pptns=pptns, scnt=scnt, idx=idx)
 	robj <- list(expr=expr, yX=yX, X=yX[names(rpmat)], cnt.counts=cnt.counts, cnt.mids=cnt.mids, gpdf=gpdf, cdf=cdf, cumcdf=cumcdf, pptns=pptns, scnt=scnt, idx=idx)
 	class(robj) <- "dsample"
 	return(robj)
 }
 
 
-#' @rdname summary_dsample
-#' @title Generating Basic Summary Statistics of Marginal Distributions
-#' @description  Producing basic summary statistics (the mean, the standard deviation and the first five modes) from the sample drawn via either the Fu-Wang algorithm or the Wang-Lee algorithm, for all marginal distributions of the target distribution.
-#' @param object a \code{data.frame}, contains the sample drawn via either the Fu-Wang algorithm or the Wang-Lee algorithm
+#' @rdname summary.dsample
+#' @title Summary Statistics of Marginal Distributions
+#' @description Producing basic summary statistics (mean, standard deviation and the first five modes) from the sample drawn for all marginal distributions.
+#' @param object \code{data.frame} containing the samples drawn
 #' @param n the first n samples
 #' @param k number of clusters
-#' @param ... more arguments
+#' @param ... arguments passing to the functions used internally
+#' @return  \code{summary.dsample} gives a list of summary statistics.
+#' \item{means}{Means}
+#' \item{stdevs}{Standard deviations}
+#' \item{modes}{Modes}
+#' \item{hc}{object produced by \code{hclust}}
+#' \item{grp}{cluster members produced by \code{hclust}}
+#' \item{X}{samples generated by \code{dsample}}
+#' \item{cdf}{cumulative distributions}
 #' @export
 summary.dsample <- function(object, n=5, k=1, ...) {
 
 	stopifnot(inherits(object, "dsample"))
-	# fmla <- object$formula
 
 	X <- object$X
 	hc <- stats::hclust(stats::dist(X))
-	grp <- stats::cutree(hc, k=k, ...) # k is used here.
+	grp <- stats::cutree(hc, k=k, ...)
 	cdf <- object$cdf
 
 	means <- colMeans(X)
 	stdevs <- do.call(c, lapply(X, stats::sd, na.rm=TRUE))
 	modes <- cbind(X)[1:n,]
 
-	# robj <- list(formula=fmla, means=means, stdevs=stdevs, modes=modes, hc=hc, grp=grp, X=X, cdf=cdf)
 	robj <- list(means=means, stdevs=stdevs, modes=modes, hc=hc, grp=grp, X=X, cdf=cdf)
 	class(robj) <- "dsample"
 	return(robj)
 }
 
 
-#' @rdname plot
-#' @title Plot dsample objects
-#' @description Plot dsample objects
-#' @param x dsample object.
-#' @param which plot indicator -- 1: cumulative distribution, 2: contour plot, 3: histogram in dimension 1, 4: histogram in dimension 2.
-#' @param ... arguments passing functions inside.
+#' @rdname plot.dsample
+#' @title Visualizing Wang-Lee Samples
+#' @description The samples generated by the Wang-Lee algorithm are plotted for visual examination. The plot is useful when multiple modes exist.
+#' @param x an object produced by \code{dsample}.
+#' @param which plot type, 1: CDF, 2: Contours, and 3: Histogram.
+#' @param ... arguments passing functions inside
+#' @value \code{plot.dsample} has no return value.
 #' @export
 plot.dsample <- function(x, which, ...){
 
@@ -121,5 +118,4 @@ plot.dsample <- function(x, which, ...){
 	  graphics::contour(density, nlevels=5, add=TRUE)
 	}
 	if(which==3) graphics::hist(X[,1], main="Histogram", ylab="density", xlab=expression(x[1]), prob=TRUE, breaks=20)
-	if(which==4) graphics::hist(X[,2], main="Histogram", ylab="density", xlab=expression(x[2]), prob=TRUE, breaks=20)
 }
