@@ -31,12 +31,14 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 	stopifnot(is.expression(expr), is.list(rpmat), is.numeric(nk), is.numeric(n), is.numeric(wconst))
 
 	y <- eval(expr=expr, envir=rpmat)
-	fmla <- stats::as.formula(paste("y~", expr, sep=""))
+	# fmla <- stats::as.formula(paste("y~", expr, sep=""))
 
 	X <- as.data.frame(rpmat)
-	yX <- cbind(y, X)
+	yX <- as.data.frame(cbind(y, X))
 	yX <- yX[which(y>0),] # data.frame
 	yX <- yX[order(yX$y, decreasing=TRUE), ]
+	# print(yX$y)
+	# print(min(yX$y))
 
 	cnt <- graphics::hist(yX$y, breaks=seq(from=min(yX$y), to=max(yX$y), length.out=nk+1), plot=FALSE)
 	cnames <- paste("e", seq_len(nk), sep="") # contour name (in order)
@@ -62,7 +64,8 @@ dsample <- function(expr, rpmat, n=1e3, nk=1e4, wconst){
 	idx <- unlist( mapply("+", as.list( c(0, cumsum(rev.cntc))[-(nk+1)] ), scnt) )
 	yX <- yX[order(yX$y, decreasing=TRUE)[idx], ]
 
-	robj <- list(formula=fmla, expr=expr, yX=yX, X=yX[all.vars(expr)], cnt.counts=cnt.counts, cnt.mids=cnt.mids, gpdf=gpdf, cdf=cdf, cumcdf=cumcdf, pptns=pptns, scnt=scnt, idx=idx)
+	# robj <- list(formula=fmla, expr=expr, yX=yX, X=yX[all.vars(expr)], cnt.counts=cnt.counts, cnt.mids=cnt.mids, gpdf=gpdf, cdf=cdf, cumcdf=cumcdf, pptns=pptns, scnt=scnt, idx=idx)
+	robj <- list(expr=expr, yX=yX, X=yX[names(rpmat)], cnt.counts=cnt.counts, cnt.mids=cnt.mids, gpdf=gpdf, cdf=cdf, cumcdf=cumcdf, pptns=pptns, scnt=scnt, idx=idx)
 	class(robj) <- "dsample"
 	return(robj)
 }
