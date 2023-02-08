@@ -38,4 +38,4 @@ Wang, L. and Lee, C.H. (2014). Discretization-based direct random sample generat
 Lee, C.H. (2009). Efficient Monte Carlo Random Sample Generation through Discretization, MSc thesis, Department of Satistics, University of Manitoba, Canada
 }
 \keyword{discretization}
-\keyword{sampling,}
+\keyword{sampling}

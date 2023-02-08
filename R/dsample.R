@@ -13,7 +13,7 @@
 #' @references
 #' Wang, L. and Lee, C.H. (2014). Discretization-based direct random sample generation. Computational Statistics and Data Analysis, 71, 1001-1010.
 #' Lee, C.H. (2009). Efficient Monte Carlo Random Sample Generation through Discretization, MSc thesis, Department of Satistics, University of Manitoba, Canada
-#' @keywords sampling, discretization
+#' @keywords sampling discretization
 #' @examples
 #' ## Example on page 414 in West (1993)
 #' expr <- expression((x1*(1-x2))^5 * (x2*(1-x1))^3 * (1-x1*(1-x2)-x2*(1-x1))^37)
@@ -102,7 +102,7 @@ summary.dsample <- function(object, n=5, k=1, ...) {
 #' @param x an object produced by \code{dsample}.
 #' @param which plot type, 1: CDF, 2: Contours, and 3: Histogram.
 #' @param ... arguments passing functions inside
-#' @value \code{plot.dsample} has no return value.
+#' @return \code{plot.dsample} has no return value.
 #' @export
 plot.dsample <- function(x, which, ...){
 
